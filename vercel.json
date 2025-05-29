@@ -1,7 +1,8 @@
 {
   "functions": {
-    "api/*.ts": {
-      "runtime": "vercel-node@canary"
+    "api/score.ts": {
+      "runtime": "nodejs18.x"
     }
   }
 }
+
