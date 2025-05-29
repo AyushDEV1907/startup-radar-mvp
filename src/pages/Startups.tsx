@@ -201,23 +201,23 @@ const Startups = () => {
         {/* Startup Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStartups.map((startup) => (
-            <Card key={startup.id} className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer bg-white/90 backdrop-blur-sm">
-              <CardContent className="p-6">
+            <Card key={startup.id} className="h-full overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer bg-white/90 backdrop-blur-sm">
+              <CardContent className="p-6 h-full flex flex-col">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1 group-hover:text-blue-600 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg mb-1 group-hover:text-blue-600 transition-colors truncate">
                       {startup.name}
                     </h3>
-                    <div className="flex gap-2 mb-2">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                    <div className="flex gap-2 mb-2 flex-wrap">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs whitespace-nowrap">
                         {startup.industry}
                       </span>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs whitespace-nowrap">
                         {startup.stage}
                       </span>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ml-2 whitespace-nowrap ${
                     startup.score >= 90 ? 'bg-green-100 text-green-800' :
                     startup.score >= 80 ? 'bg-yellow-100 text-yellow-800' :
                     'bg-blue-100 text-blue-800'
@@ -226,7 +226,7 @@ const Startups = () => {
                   </span>
                 </div>
 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                <p className="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">
                   {startup.description}
                 </p>
 
@@ -241,7 +241,7 @@ const Startups = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-auto">
                   <Link to={`/startups/${startup.id}`} className="flex-1">
                     <Button 
                       size="sm" 
