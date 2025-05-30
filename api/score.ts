@@ -1,3 +1,4 @@
+
 // api/score.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -13,13 +14,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     typeof stageMatch !== 'number' ||
     typeof traction !== 'number'
   ) {
-    return res.status(400).json({ error: 'Invalid input data' });
+    return res.status(400).json({ error: 'Invalid input' });
   }
 
   const scoreRaw = 0.4 * industryMatch + 0.3 * stageMatch + 0.3 * traction;
   const scorePercent = Math.round((1 / (1 + Math.exp(-scoreRaw))) * 100);
 
-  res.status(200).json({ score: scorePercent });
+  return res.status(200).json({ score: scorePercent });
 }
-
-
