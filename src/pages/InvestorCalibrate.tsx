@@ -1,14 +1,15 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, TrendingUp, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { useScoreCalculation } from '@/hooks/useScoreCalculation';
 
 const InvestorCalibrate = () => {
   const [currentCard, setCurrentCard] = useState(0);
   const [decisions, setDecisions] = useState<Array<'invest' | 'pass' | null>>([null, null, null, null, null]);
+  const { score, isLoading, error, calculate } = useScoreCalculation();
 
   const demoStartups = [
     {
@@ -78,10 +79,20 @@ const InvestorCalibrate = () => {
     }
   ];
 
-  const handleDecision = (decision: 'invest' | 'pass') => {
+  const handleDecision = async (decision: 'invest' | 'pass') => {
     const newDecisions = [...decisions];
     newDecisions[currentCard] = decision;
     setDecisions(newDecisions);
+
+    // Calculate score for this startup
+    const startup = demoStartups[currentCard];
+    await calculate({
+      industryMatch: 0.8, // You can customize this based on startup data
+      stageMatch: 0.6,
+      traction: 0.7
+    });
+
+    console.log(`Decision: ${decision}, Score: ${score}`);
 
     if (currentCard < demoStartups.length - 1) {
       setCurrentCard(currentCard + 1);
@@ -187,6 +198,21 @@ const InvestorCalibrate = () => {
                   </div>
                 </div>
 
+                {/* Score Display */}
+                {score !== null && (
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm text-gray-600">AI Score</div>
+                    <div className="text-2xl font-bold text-blue-600">{score}%</div>
+                  </div>
+                )}
+
+                {/* Error Display */}
+                {error && (
+                  <div className="text-center p-3 bg-red-50 rounded-lg">
+                    <div className="text-sm text-red-600">{error}</div>
+                  </div>
+                )}
+
                 {/* Decision Buttons */}
                 <div className="flex gap-4 pt-4">
                   <Button
@@ -194,15 +220,17 @@ const InvestorCalibrate = () => {
                     size="lg"
                     className="flex-1 py-4 border-2 hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition-all duration-300"
                     onClick={() => handleDecision('pass')}
+                    disabled={isLoading}
                   >
-                    Pass
+                    {isLoading ? 'Calculating...' : 'Pass'}
                   </Button>
                   <Button
                     size="lg"
                     className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => handleDecision('invest')}
+                    disabled={isLoading}
                   >
-                    Invest
+                    {isLoading ? 'Calculating...' : 'Invest'}
                   </Button>
                 </div>
               </CardContent>
