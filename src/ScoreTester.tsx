@@ -18,17 +18,32 @@ const ScoreTester: React.FC = () => {
     setError(null);
     
     try {
+      // Based on the Supabase function, it expects investorPrefs and startup objects
+      const requestBody = {
+        investorPrefs: {
+          industries: ["Tech"], // Default values for testing
+          stages: ["Seed"],
+          valuationMin: 1000000,
+          valuationMax: 10000000,
+          maxBurnRate: 50000
+        },
+        startup: {
+          industry: "Tech",
+          stage: "Seed",
+          valuation: 5000000,
+          mrrGrowth: traction, // Using traction input as MRR growth
+          burnRate: 30000,
+          founderExperienceScore: industryMatch // Using industryMatch as founder score
+        }
+      };
+
       const response = await fetch('https://hzboruygxgqfnfmifuuu.supabase.co/functions/v1/score', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6Ym9ydXlneHFnZm5mbWlmdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU3MzY2ODMsImV4cCI6MjA1MTMxMjY4M30.QN2DbZq_3qGaJYOQfWlKwJTM5E-UtGHNvUGzQfTgYr4`, // Using the anon key directly
         },
-        body: JSON.stringify({
-          industryMatch,
-          stageMatch,
-          traction
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -51,35 +66,38 @@ const ScoreTester: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="industryMatch">Industry Match</Label>
+          <Label htmlFor="industryMatch">Founder Experience Score (0-10)</Label>
           <Input
             id="industryMatch"
             type="number"
             value={industryMatch}
             onChange={(e) => setIndustryMatch(Number(e.target.value))}
-            placeholder="Enter industry match score"
+            placeholder="Enter founder experience score (0-10)"
+            min="0"
+            max="10"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="stageMatch">Stage Match</Label>
+          <Label htmlFor="stageMatch">Stage Match (unused in test)</Label>
           <Input
             id="stageMatch"
             type="number"
             value={stageMatch}
             onChange={(e) => setStageMatch(Number(e.target.value))}
-            placeholder="Enter stage match score"
+            placeholder="Not used in current test"
+            disabled
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="traction">Traction</Label>
+          <Label htmlFor="traction">MRR Growth Rate (%)</Label>
           <Input
             id="traction"
             type="number"
             value={traction}
             onChange={(e) => setTraction(Number(e.target.value))}
-            placeholder="Enter traction score"
+            placeholder="Enter MRR growth rate"
           />
         </div>
 
