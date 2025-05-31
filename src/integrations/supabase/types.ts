@@ -124,6 +124,16 @@ export type Database = {
           stage: string
         }[]
       }
+      get_vertical_recommendations: {
+        Args: { user_id_input: string }
+        Returns: {
+          id: string
+          name: string
+          industry: string
+          stage: string
+          score: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

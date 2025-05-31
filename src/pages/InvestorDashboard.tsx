@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Recommendations from '@/components/Recommendations';
+import VerticalRecommendations from '@/components/VerticalRecommendations';
 
 const InvestorDashboard = () => {
   const portfolioStats = {
@@ -22,8 +23,6 @@ const InvestorDashboard = () => {
     { action: "Invested", startup: "FinanceFlow Pro", amount: "$25K", date: "2 weeks ago", status: "completed" },
     { action: "Reviewed", startup: "EduTech Innovators", amount: "-", date: "3 weeks ago", status: "pending" }
   ];
-
-  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -54,7 +53,7 @@ const InvestorDashboard = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome back, Alex</h1>
           <p className="text-gray-600">
-            You have 3 new startup recommendations based on your investment preferences.
+            You have personalized recommendations based on your investment preferences and activity.
           </p>
         </div>
 
@@ -120,8 +119,19 @@ const InvestorDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Recommended Startups */}
-            <Recommendations userId="550e8400-e29b-41d4-a716-446655440000" />
+            {/* Recommendation Tabs */}
+            <Tabs defaultValue="ai" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white/90 backdrop-blur-sm">
+                <TabsTrigger value="ai">AI Recommendations</TabsTrigger>
+                <TabsTrigger value="collaborative">Collaborative</TabsTrigger>
+              </TabsList>
+              <TabsContent value="ai" className="mt-6">
+                <VerticalRecommendations userId="550e8400-e29b-41d4-a716-446655440000" />
+              </TabsContent>
+              <TabsContent value="collaborative" className="mt-6">
+                <Recommendations userId="550e8400-e29b-41d4-a716-446655440000" />
+              </TabsContent>
+            </Tabs>
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
