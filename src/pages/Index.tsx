@@ -27,6 +27,9 @@ const Index = () => {
               <Link to="/investor-dashboard" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Investor Dashboard
               </Link>
+              <Link to="/score-tester" className="text-gray-600 hover:text-blue-600 transition-colors">
+                Score Tester
+              </Link>
               <Button variant="outline" className="mr-2">
                 Sign In
               </Button>

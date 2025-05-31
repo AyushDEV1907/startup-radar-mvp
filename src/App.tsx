@@ -11,6 +11,7 @@ import InvestorDashboard from "./pages/InvestorDashboard";
 import Startups from "./pages/Startups";
 import StartupDetail from "./pages/StartupDetail";
 import NotFound from "./pages/NotFound";
+import ScoreTester from "./ScoreTester";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/investor-dashboard" element={<InvestorDashboard />} />
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:id" element={<StartupDetail />} />
+          <Route path="/score-tester" element={<ScoreTester />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
