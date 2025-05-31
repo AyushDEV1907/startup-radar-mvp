@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Recommendations from '@/components/Recommendations';
 
 const InvestorDashboard = () => {
   const portfolioStats = {
@@ -22,38 +23,7 @@ const InvestorDashboard = () => {
     { action: "Reviewed", startup: "EduTech Innovators", amount: "-", date: "3 weeks ago", status: "pending" }
   ];
 
-  const recommendedStartups = [
-    {
-      id: 1,
-      name: "QuantumAI Systems",
-      industry: "AI/ML",
-      stage: "Series A",
-      score: 94,
-      match: "95%",
-      mrr: "$78K",
-      growth: "+420%"
-    },
-    {
-      id: 2,
-      name: "BioMed Innovations", 
-      industry: "Biotech",
-      stage: "Seed",
-      score: 89,
-      match: "91%",
-      mrr: "$34K",
-      growth: "+290%"
-    },
-    {
-      id: 3,
-      name: "GreenEnergy Solutions",
-      industry: "CleanTech",
-      stage: "Series A",
-      score: 87,
-      match: "88%",
-      mrr: "$56K",
-      growth: "+310%"
-    }
-  ];
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -151,65 +121,7 @@ const InvestorDashboard = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Recommended Startups */}
-            <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center">
-                    <Star className="mr-2 w-5 h-5" />
-                    Recommended for You
-                  </CardTitle>
-                  <Link to="/startups">
-                    <Button variant="outline" size="sm">
-                      View All
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recommendedStartups.map((startup) => (
-                  <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold">{startup.name}</h4>
-                        <div className="flex gap-2 mt-1">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                            {startup.industry}
-                          </span>
-                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                            {startup.stage}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-green-600">{startup.match}</div>
-                        <div className="text-xs text-gray-600">Match Score</div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                      <div>
-                        <span className="text-sm text-gray-600">MRR:</span>
-                        <span className="ml-2 font-medium">{startup.mrr}</span>
-                      </div>
-                      <div>
-                        <span className="text-sm text-gray-600">Growth:</span>
-                        <span className="ml-2 font-medium text-green-600">{startup.growth}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link to={`/startups/${startup.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          View Details
-                        </Button>
-                      </Link>
-                      <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                        Invest
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <Recommendations userId="demo-user-123" />
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
