@@ -15,15 +15,20 @@ export function useHorizontalRecommendations(userId: string) {
         throw new Error('Invalid user ID format. Please use a valid UUID.');
       }
 
+      console.log('Calling get_horizontal_recommendations with userId:', userId);
+      
       const { data, error } = await supabase
         .rpc('get_horizontal_recommendations', { user_id_input: userId });
 
       if (error) {
-        throw new Error(error.message);
+        console.error('Supabase RPC error:', error);
+        throw new Error(`Database error: ${error.message}`);
       }
 
-      return data;
+      console.log('Recommendations data received:', data);
+      return data || [];
     },
     enabled: !!userId && isValidUUID(userId), // only run if userId is provided and is a valid UUID
+    retry: 1, // Only retry once to avoid spam
   });
 }

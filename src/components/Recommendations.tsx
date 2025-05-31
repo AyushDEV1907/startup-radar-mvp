@@ -18,6 +18,10 @@ interface Startup {
   score?: number;
   mrr?: string;
   growth?: string;
+  // Add other possible fields that might be returned
+  funding_stage?: string;
+  company_name?: string;
+  tagline?: string;
 }
 
 function Recommendations({ userId }: RecommendationsProps) {
@@ -108,17 +112,17 @@ function Recommendations({ userId }: RecommendationsProps) {
           <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h4 className="font-semibold">{startup.name}</h4>
-                {(startup.industry || startup.stage) && (
+                <h4 className="font-semibold">{startup.name || startup.company_name}</h4>
+                {(startup.industry || startup.stage || startup.funding_stage) && (
                   <div className="flex gap-2 mt-1">
                     {startup.industry && (
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                         {startup.industry}
                       </span>
                     )}
-                    {startup.stage && (
+                    {(startup.stage || startup.funding_stage) && (
                       <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                        {startup.stage}
+                        {startup.stage || startup.funding_stage}
                       </span>
                     )}
                   </div>
@@ -132,8 +136,8 @@ function Recommendations({ userId }: RecommendationsProps) {
               )}
             </div>
             
-            {startup.description && (
-              <p className="text-gray-600 text-sm mb-3">{startup.description}</p>
+            {(startup.description || startup.tagline) && (
+              <p className="text-gray-600 text-sm mb-3">{startup.description || startup.tagline}</p>
             )}
             
             {(startup.mrr || startup.growth) && (
