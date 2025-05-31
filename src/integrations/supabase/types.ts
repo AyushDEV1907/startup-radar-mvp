@@ -115,7 +115,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_horizontal_recommendations: {
+        Args: { user_id_input: string }
+        Returns: {
+          id: string
+          name: string
+          industry: string
+          stage: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

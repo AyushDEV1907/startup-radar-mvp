@@ -9,19 +9,12 @@ interface RecommendationsProps {
   userId: string;
 }
 
-interface Startup {
+// Updated interface to match the actual database function return type
+interface RecommendationStartup {
   id: string;
   name: string;
-  description?: string;
-  industry?: string;
-  stage?: string;
-  score?: number;
-  mrr?: string;
-  growth?: string;
-  // Add other possible fields that might be returned
-  funding_stage?: string;
-  company_name?: string;
-  tagline?: string;
+  industry: string;
+  stage: string;
 }
 
 function Recommendations({ userId }: RecommendationsProps) {
@@ -108,56 +101,23 @@ function Recommendations({ userId }: RecommendationsProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {recommendations.map((startup: Startup) => (
+        {recommendations.map((startup: RecommendationStartup) => (
           <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h4 className="font-semibold">{startup.name || startup.company_name}</h4>
-                {(startup.industry || startup.stage || startup.funding_stage) && (
-                  <div className="flex gap-2 mt-1">
-                    {startup.industry && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                        {startup.industry}
-                      </span>
-                    )}
-                    {(startup.stage || startup.funding_stage) && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                        {startup.stage || startup.funding_stage}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              {startup.score && (
-                <div className="text-right">
-                  <div className="text-lg font-bold text-green-600">{startup.score}%</div>
-                  <div className="text-xs text-gray-600">Match Score</div>
+                <h4 className="font-semibold">{startup.name}</h4>
+                <div className="flex gap-2 mt-1">
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                    {startup.industry}
+                  </span>
+                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
+                    {startup.stage}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
             
-            {(startup.description || startup.tagline) && (
-              <p className="text-gray-600 text-sm mb-3">{startup.description || startup.tagline}</p>
-            )}
-            
-            {(startup.mrr || startup.growth) && (
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                {startup.mrr && (
-                  <div>
-                    <span className="text-sm text-gray-600">MRR:</span>
-                    <span className="ml-2 font-medium">{startup.mrr}</span>
-                  </div>
-                )}
-                {startup.growth && (
-                  <div>
-                    <span className="text-sm text-gray-600">Growth:</span>
-                    <span className="ml-2 font-medium text-green-600">{startup.growth}</span>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               <Link to={`/startups/${startup.id}`} className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">
                   View Details
