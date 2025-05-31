@@ -38,16 +38,28 @@ const ScoreTester: React.FC = () => {
         }
       };
 
+      console.log('Sending request body:', requestBody);
+      
       const { data, error } = await supabase.functions.invoke('score', {
         body: requestBody
       });
 
+      console.log('Response data:', data);
+      console.log('Response error:', error);
+
       if (error) {
-        throw new Error(error.message);
+        console.error('Supabase function error:', error);
+        throw new Error(`Supabase error: ${error.message || JSON.stringify(error)}`);
+      }
+
+      if (!data || typeof data.score === 'undefined') {
+        console.error('Invalid response data:', data);
+        throw new Error('Invalid response: score not found in response');
       }
 
       setScore(data.score);
     } catch (err) {
+      console.error('Full error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
