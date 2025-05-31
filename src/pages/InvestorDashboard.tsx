@@ -121,7 +121,7 @@ const InvestorDashboard = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Recommended Startups */}
-            <Recommendations userId="demo-user-123" />
+            <Recommendations userId="550e8400-e29b-41d4-a716-446655440000" />
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">

@@ -2,10 +2,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 export function useHorizontalRecommendations(userId: string) {
   return useQuery({
     queryKey: ['recommendations', userId],
     queryFn: async () => {
+      if (!isValidUUID(userId)) {
+        throw new Error('Invalid user ID format. Please use a valid UUID.');
+      }
+
       const { data, error } = await supabase
         .rpc('get_horizontal_recommendations', { user_id_input: userId });
 
@@ -15,6 +24,6 @@ export function useHorizontalRecommendations(userId: string) {
 
       return data;
     },
-    enabled: !!userId, // only run if userId is provided
+    enabled: !!userId && isValidUUID(userId), // only run if userId is provided and is a valid UUID
   });
 }
