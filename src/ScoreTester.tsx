@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 const ScoreTester: React.FC = () => {
   const [industryMatch, setIndustryMatch] = useState<number>(0);
@@ -37,20 +38,14 @@ const ScoreTester: React.FC = () => {
         }
       };
 
-      const response = await fetch('https://hzboruygxgqfnfmifuuu.supabase.co/functions/v1/score', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6Ym9ydXlneHFnZm5mbWlmdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU3MzY2ODMsImV4cCI6MjA1MTMxMjY4M30.QN2DbZq_3qGaJYOQfWlKwJTM5E-UtGHNvUGzQfTgYr4`, // Using the anon key directly
-        },
-        body: JSON.stringify(requestBody)
+      const { data, error } = await supabase.functions.invoke('score', {
+        body: requestBody
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
       setScore(data.score);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
