@@ -1,13 +1,10 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, BarChart3, Target, Calendar, Star, ArrowRight, Filter } from 'lucide-react';
+import { TrendingUp, BarChart3, Target, Calendar, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Recommendations from '@/components/Recommendations';
-import VerticalRecommendations from '@/components/VerticalRecommendations';
+import CombinedRecommendations from '@/components/CombinedRecommendations';
 
 const InvestorDashboard = () => {
   const portfolioStats = {
@@ -119,19 +116,8 @@ const InvestorDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Recommendation Tabs */}
-            <Tabs defaultValue="ai" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/90 backdrop-blur-sm">
-                <TabsTrigger value="ai">AI Recommendations</TabsTrigger>
-                <TabsTrigger value="collaborative">Collaborative</TabsTrigger>
-              </TabsList>
-              <TabsContent value="ai" className="mt-6">
-                <VerticalRecommendations userId="550e8400-e29b-41d4-a716-446655440000" />
-              </TabsContent>
-              <TabsContent value="collaborative" className="mt-6">
-                <Recommendations userId="550e8400-e29b-41d4-a716-446655440000" />
-              </TabsContent>
-            </Tabs>
+            {/* Combined Recommendations */}
+            <CombinedRecommendations userId="550e8400-e29b-41d4-a716-446655440000" />
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
