@@ -1,11 +1,14 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, TrendingUp, Users, Target, BarChart3, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import CombinedRecommendations from '@/components/CombinedRecommendations';
 
 const Index = () => {
+  // Demo user ID for the recommendations - in a real app this would come from auth
+  const demoUserId = "550e8400-e29b-41d4-a716-446655440000";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
@@ -67,6 +70,13 @@ const Index = () => {
               List Your Startup
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Combined Recommendations Section */}
+      <section className="py-16 px-6">
+        <div className="container mx-auto max-w-4xl">
+          <CombinedRecommendations userId={demoUserId} />
         </div>
       </section>
 
