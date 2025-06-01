@@ -44,10 +44,15 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
   const horizontalQuery = useQuery({
     queryKey: ['horizontal-recommendations', userId],
     queryFn: async () => {
+      console.log('Fetching horizontal recommendations for user:', userId);
       const { data, error } = await supabase
         .rpc('get_horizontal_recommendations', { user_id_input: userId });
       
-      if (error) throw new Error(`Horizontal recommendations error: ${error.message}`);
+      if (error) {
+        console.error('Horizontal recommendations error:', error);
+        throw new Error(`Horizontal recommendations error: ${error.message}`);
+      }
+      console.log('Horizontal recommendations data:', data);
       return data || [];
     },
     enabled: !!userId,
@@ -57,10 +62,15 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
   const verticalQuery = useQuery({
     queryKey: ['vertical-recommendations', userId],
     queryFn: async () => {
+      console.log('Fetching vertical recommendations for user:', userId);
       const { data, error } = await supabase
         .rpc('get_vertical_recommendations', { user_id_input: userId });
       
-      if (error) throw new Error(`Vertical recommendations error: ${error.message}`);
+      if (error) {
+        console.error('Vertical recommendations error:', error);
+        throw new Error(`Vertical recommendations error: ${error.message}`);
+      }
+      console.log('Vertical recommendations data:', data);
       return data || [];
     },
     enabled: !!userId,
@@ -70,10 +80,11 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
   const { data: combinedRecommendations, isLoading, error } = useQuery({
     queryKey: ['combined-recommendations', userId],
     queryFn: async () => {
-      const [horizontalData, verticalData] = await Promise.all([
-        horizontalQuery.refetch().then(result => result.data || []),
-        verticalQuery.refetch().then(result => result.data || [])
-      ]);
+      const horizontalData = horizontalQuery.data || [];
+      const verticalData = verticalQuery.data || [];
+
+      console.log('Processing horizontal data:', horizontalData);
+      console.log('Processing vertical data:', verticalData);
 
       // Transform horizontal recommendations
       const horizontal: CombinedRecommendation[] = horizontalData.map((item: HorizontalRecommendation) => ({
@@ -103,7 +114,9 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
 
       // Combine and sort by score descending
       const combined = [...horizontal, ...vertical];
-      return combined.sort((a, b) => b.score - a.score);
+      const sorted = combined.sort((a, b) => b.score - a.score);
+      console.log('Final combined recommendations:', sorted);
+      return sorted;
     },
     enabled: !!userId && horizontalQuery.data !== undefined && verticalQuery.data !== undefined,
   });
