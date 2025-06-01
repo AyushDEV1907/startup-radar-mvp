@@ -17,16 +17,14 @@ interface HorizontalRecommendation {
   name: string;
   industry: string;
   stage: string;
-  cf_score: number;
 }
 
 interface VerticalRecommendation {
   id: string;
-  title: string;
-  description: string;
-  image: string;
-  rl_score: number;
-  user_id: string;
+  name: string;
+  industry: string;
+  stage: string;
+  score: number;
 }
 
 interface CombinedRecommendation {
@@ -60,9 +58,7 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
     queryKey: ['vertical-recommendations', userId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('vertical_recommendations')
-        .select('*')
-        .eq('user_id', userId);
+        .rpc('get_vertical_recommendations', { user_id_input: userId });
       
       if (error) throw new Error(`Vertical recommendations error: ${error.message}`);
       return data || [];
@@ -80,27 +76,29 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
       ]);
 
       // Transform horizontal recommendations
-      const horizontal: CombinedRecommendation[] = horizontalData.map((item: any) => ({
+      const horizontal: CombinedRecommendation[] = horizontalData.map((item: HorizontalRecommendation) => ({
         id: item.id,
         title: item.name,
         description: `${item.industry} startup in ${item.stage} stage`,
         image: '/placeholder.svg',
         source: 'suggested' as const,
-        score: (item.cf_score || 0.7) * 0.6, // Default cf_score if not available
+        score: 0.6, // Default collaborative filtering score
         label: 'Suggested' as const,
         industry: item.industry,
         stage: item.stage
       }));
 
-      // Transform vertical recommendations
+      // Transform vertical recommendations  
       const vertical: CombinedRecommendation[] = verticalData.map((item: VerticalRecommendation) => ({
         id: item.id,
-        title: item.title,
-        description: item.description,
-        image: item.image || '/placeholder.svg',
+        title: item.name,
+        description: `${item.industry} startup in ${item.stage} stage`,
+        image: '/placeholder.svg',
         source: 'curated' as const,
-        score: item.rl_score * 0.9,
-        label: 'Curated' as const
+        score: item.score * 0.9,
+        label: 'Curated' as const,
+        industry: item.industry,
+        stage: item.stage
       }));
 
       // Combine and sort by score descending
@@ -233,7 +231,7 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
                   {recommendation.description}
                 </p>
                 
-                {/* Industry and Stage tags for horizontal recommendations */}
+                {/* Industry and Stage tags */}
                 {recommendation.industry && recommendation.stage && (
                   <div className="flex gap-2 mb-2">
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
