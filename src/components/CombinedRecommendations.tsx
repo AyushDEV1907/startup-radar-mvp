@@ -1,5 +1,7 @@
 
-import { useCombinedRecommendations } from '@/hooks/useCombinedRecommendations';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -10,10 +12,105 @@ interface CombinedRecommendationsProps {
   userId: string;
 }
 
-function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
-  const { data: recommendations, isLoading, error } = useCombinedRecommendations(userId);
+interface HorizontalRecommendation {
+  id: string;
+  name: string;
+  industry: string;
+  stage: string;
+  cf_score: number;
+}
 
-  if (isLoading) {
+interface VerticalRecommendation {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  rl_score: number;
+  user_id: string;
+}
+
+interface CombinedRecommendation {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  source: 'suggested' | 'curated';
+  score: number;
+  label: 'Suggested' | 'Curated';
+  industry?: string;
+  stage?: string;
+}
+
+function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
+  // Fetch horizontal recommendations
+  const horizontalQuery = useQuery({
+    queryKey: ['horizontal-recommendations', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_horizontal_recommendations', { user_id_input: userId });
+      
+      if (error) throw new Error(`Horizontal recommendations error: ${error.message}`);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // Fetch vertical recommendations
+  const verticalQuery = useQuery({
+    queryKey: ['vertical-recommendations', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vertical_recommendations')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) throw new Error(`Vertical recommendations error: ${error.message}`);
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // Combine recommendations
+  const { data: combinedRecommendations, isLoading, error } = useQuery({
+    queryKey: ['combined-recommendations', userId],
+    queryFn: async () => {
+      const [horizontalData, verticalData] = await Promise.all([
+        horizontalQuery.refetch().then(result => result.data || []),
+        verticalQuery.refetch().then(result => result.data || [])
+      ]);
+
+      // Transform horizontal recommendations
+      const horizontal: CombinedRecommendation[] = horizontalData.map((item: any) => ({
+        id: item.id,
+        title: item.name,
+        description: `${item.industry} startup in ${item.stage} stage`,
+        image: '/placeholder.svg',
+        source: 'suggested' as const,
+        score: (item.cf_score || 0.7) * 0.6, // Default cf_score if not available
+        label: 'Suggested' as const,
+        industry: item.industry,
+        stage: item.stage
+      }));
+
+      // Transform vertical recommendations
+      const vertical: CombinedRecommendation[] = verticalData.map((item: VerticalRecommendation) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        image: item.image || '/placeholder.svg',
+        source: 'curated' as const,
+        score: item.rl_score * 0.9,
+        label: 'Curated' as const
+      }));
+
+      // Combine and sort by score descending
+      const combined = [...horizontal, ...vertical];
+      return combined.sort((a, b) => b.score - a.score);
+    },
+    enabled: !!userId && horizontalQuery.data !== undefined && verticalQuery.data !== undefined,
+  });
+
+  if (isLoading || horizontalQuery.isLoading || verticalQuery.isLoading) {
     return (
       <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
         <CardHeader>
@@ -26,10 +123,11 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="border rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <Skeleton className="h-5 w-3/4 mb-2" />
-                  <div className="flex gap-2 mb-2">
-                    <Skeleton className="h-6 w-16" />
+                <div className="flex gap-4 flex-1">
+                  <Skeleton className="h-16 w-16 rounded-lg" />
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full mb-2" />
                     <Skeleton className="h-6 w-20" />
                   </div>
                 </div>
@@ -46,7 +144,8 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
     );
   }
 
-  if (error) {
+  if (error || horizontalQuery.error || verticalQuery.error) {
+    const errorMessage = error?.message || horizontalQuery.error?.message || verticalQuery.error?.message;
     return (
       <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
         <CardHeader>
@@ -56,7 +155,7 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-red-600">Error loading recommendations: {error.message}</p>
+          <p className="text-red-600">Error loading recommendations: {errorMessage}</p>
           <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
             Try Again
           </Button>
@@ -65,7 +164,7 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
     );
   }
 
-  if (!recommendations || recommendations.length === 0) {
+  if (!combinedRecommendations || combinedRecommendations.length === 0) {
     return (
       <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
         <CardHeader>
@@ -104,63 +203,81 @@ function CombinedRecommendations({ userId }: CombinedRecommendationsProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {recommendations.map((startup) => (
-          <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-            <div className="flex items-start justify-between mb-3">
+        {combinedRecommendations.map((recommendation) => (
+          <div 
+            key={recommendation.id} 
+            className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+          >
+            <div className="flex items-start gap-4 mb-3">
+              {/* Image */}
+              <img 
+                src={recommendation.image} 
+                alt={recommendation.title}
+                className="w-16 h-16 object-cover rounded-lg bg-gray-100"
+              />
+              
+              {/* Content */}
               <div className="flex-1">
-                <h4 className="font-semibold text-lg mb-1">{startup.name}</h4>
-                <div className="flex gap-2 mb-2">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                    {startup.industry}
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                    {startup.stage}
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-lg">{recommendation.title}</h4>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    recommendation.source === 'suggested' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-purple-100 text-purple-800'
+                  }`}>
+                    {recommendation.label}
                   </span>
                 </div>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium mb-2 ${
-                  startup.type === 'vertical' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-orange-100 text-orange-800'
-                }`}>
-                  {startup.label}
-                </span>
-                <div className="text-right">
-                  <div className="text-sm font-medium">
-                    Score: {(startup.score * 100).toFixed(0)}%
+                
+                <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                  {recommendation.description}
+                </p>
+                
+                {/* Industry and Stage tags for horizontal recommendations */}
+                {recommendation.industry && recommendation.stage && (
+                  <div className="flex gap-2 mb-2">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                      {recommendation.industry}
+                    </span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                      {recommendation.stage}
+                    </span>
                   </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Score and Actions */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Relevance Score:</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        recommendation.score >= 0.6 ? 'bg-green-500' :
+                        recommendation.score >= 0.3 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(recommendation.score * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">
+                    {(recommendation.score * 100).toFixed(0)}%
+                  </span>
                 </div>
               </div>
-            </div>
-            
-            {/* Relevance Score Bar */}
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                <span>Relevance</span>
-                <span>{(startup.score * 100).toFixed(0)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${
-                    startup.score >= 0.7 ? 'bg-green-500' :
-                    startup.score >= 0.4 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${startup.score * 100}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Link to={`/startups/${startup.id}`} className="flex-1">
-                <Button variant="outline" size="sm" className="w-full">
-                  View Details
+              
+              <div className="flex gap-2">
+                <Link to={`/startups/${recommendation.id}`}>
+                  <Button variant="outline" size="sm">
+                    View Details
+                  </Button>
+                </Link>
+                <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  <Star className="mr-1 w-3 h-3" />
+                  Invest
                 </Button>
-              </Link>
-              <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
-                <Star className="mr-1 w-3 h-3" />
-                Invest
-              </Button>
+              </div>
             </div>
           </div>
         ))}
