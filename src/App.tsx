@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import InvestorOnboard from "./pages/InvestorOnboard";
 import InvestorCalibrate from "./pages/InvestorCalibrate";
 import InvestorDashboard from "./pages/InvestorDashboard";
+import InvestorSignup from "./pages/InvestorSignup";
+import InvestorPreferences from "./pages/InvestorPreferences";
+import InvestorSeedTest from "./pages/InvestorSeedTest";
 import Startups from "./pages/Startups";
 import StartupDetail from "./pages/StartupDetail";
 import NotFound from "./pages/NotFound";
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/investor-onboard" element={<InvestorOnboard />} />
           <Route path="/investor-calibrate" element={<InvestorCalibrate />} />
           <Route path="/investor-dashboard" element={<InvestorDashboard />} />
+          <Route path="/investor-signup" element={<InvestorSignup />} />
+          <Route path="/investor/preferences" element={<InvestorPreferences />} />
+          <Route path="/investor/seed-test" element={<InvestorSeedTest />} />
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:id" element={<StartupDetail />} />
           <Route path="/score-tester" element={<ScoreTester />} />

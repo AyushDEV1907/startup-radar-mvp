@@ -131,7 +131,6 @@ export type Database = {
           name: string
           industry: string
           stage: string
-          score: number
         }[]
       }
     }
