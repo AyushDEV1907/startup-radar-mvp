@@ -59,6 +59,7 @@ export type Database = {
           industry: string
           metrics: Json | null
           name: string
+          pitch_deck_url: string | null
           stage: string
         }
         Insert: {
@@ -68,6 +69,7 @@ export type Database = {
           industry: string
           metrics?: Json | null
           name: string
+          pitch_deck_url?: string | null
           stage: string
         }
         Update: {
@@ -77,6 +79,7 @@ export type Database = {
           industry?: string
           metrics?: Json | null
           name?: string
+          pitch_deck_url?: string | null
           stage?: string
         }
         Relationships: [

@@ -16,6 +16,9 @@ const Index = () => {
               <span className="ml-2 text-xl font-bold text-gray-900">InvestorMatch</span>
             </div>
             <nav className="flex space-x-4">
+              <Link to="/startup/signup">
+                <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">Join as Startup</Button>
+              </Link>
               <Link to="/investor-signup">
                 <Button variant="outline">Join as Investor</Button>
               </Link>
@@ -41,6 +44,11 @@ const Index = () => {
             <Link to="/investor-signup">
               <Button size="lg" className="w-full sm:w-auto">
                 Start Investing
+              </Button>
+            </Link>
+            <Link to="/startup/signup">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-green-600 text-green-600 hover:bg-green-50">
+                List Your Startup
               </Button>
             </Link>
             <Link to="/startups">
@@ -99,16 +107,23 @@ const Index = () => {
         {/* CTA Section */}
         <div className="text-center bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Start Your Investment Journey?
+            Ready to Start Your Journey?
           </h2>
           <p className="text-lg text-gray-600 mb-6">
-            Join hundreds of investors who trust our platform to find their next great investment.
+            Join hundreds of investors and startups who trust our platform to find their next great opportunity.
           </p>
-          <Link to="/investor-signup">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-              Get Started Today
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/investor-signup">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                Get Started as Investor
+              </Button>
+            </Link>
+            <Link to="/startup/signup">
+              <Button size="lg" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                List Your Startup
+              </Button>
+            </Link>
+          </div>
         </div>
       </main>
     </div>

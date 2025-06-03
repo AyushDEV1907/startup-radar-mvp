@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, TrendingUp, DollarSign } from 'lucide-react';
@@ -126,25 +125,17 @@ export default function InvestorPreferences() {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase
-        .from('investor_profiles')
-        .insert({
-          user_id: user.id,
-          industries: selectedIndustries,
-          stages: selectedStages,
-          valuation_min: parseInt(valuationMin) * 1000000, // Convert to actual value
-          valuation_max: parseInt(valuationMax) * 1000000, // Convert to actual value
-          burn_rate_max: parseInt(burnRateMax) * 1000 // Convert to actual value
-        });
+      // For now, we'll just store preferences in localStorage since we don't have an investor_profiles table
+      const preferences = {
+        userId: user.id,
+        industries: selectedIndustries,
+        stages: selectedStages,
+        valuationMin: parseInt(valuationMin) * 1000000,
+        valuationMax: parseInt(valuationMax) * 1000000,
+        burnRateMax: parseInt(burnRateMax) * 1000
+      };
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
+      localStorage.setItem('investorPreferences', JSON.stringify(preferences));
 
       toast({
         title: "Success!",

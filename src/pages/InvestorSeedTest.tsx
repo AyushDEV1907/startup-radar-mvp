@@ -47,7 +47,7 @@ export default function InvestorSeedTest() {
       const { data, error } = await supabase
         .from('startups')
         .select('*')
-        .limit(8); // Get 8 to randomly select 5
+        .limit(8);
 
       if (error) {
         toast({
@@ -58,8 +58,19 @@ export default function InvestorSeedTest() {
         return;
       }
 
+      // Transform the data to match our interface
+      const transformedStartups = data?.map(startup => ({
+        id: startup.id,
+        name: startup.name,
+        industry: startup.industry,
+        stage: startup.stage,
+        metrics: typeof startup.metrics === 'object' && startup.metrics !== null 
+          ? startup.metrics as { mrr: number; growth_rate: number; founder_experience: number }
+          : { mrr: 0, growth_rate: 0, founder_experience: 0 }
+      })) || [];
+
       // Randomly select 5 startups
-      const shuffled = data?.sort(() => 0.5 - Math.random()) || [];
+      const shuffled = transformedStartups.sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 5);
       setStartups(selected);
     } catch (error) {

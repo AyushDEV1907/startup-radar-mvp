@@ -11,6 +11,9 @@ import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorSignup from "./pages/InvestorSignup";
 import InvestorPreferences from "./pages/InvestorPreferences";
 import InvestorSeedTest from "./pages/InvestorSeedTest";
+import StartupSignup from "./pages/StartupSignup";
+import StartupRegister from "./pages/StartupRegister";
+import StartupDashboard from "./pages/StartupDashboard";
 import Startups from "./pages/Startups";
 import StartupDetail from "./pages/StartupDetail";
 import NotFound from "./pages/NotFound";
@@ -32,6 +35,9 @@ const App = () => (
           <Route path="/investor-signup" element={<InvestorSignup />} />
           <Route path="/investor/preferences" element={<InvestorPreferences />} />
           <Route path="/investor/seed-test" element={<InvestorSeedTest />} />
+          <Route path="/startup/signup" element={<StartupSignup />} />
+          <Route path="/startup/register" element={<StartupRegister />} />
+          <Route path="/startup/dashboard" element={<StartupDashboard />} />
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:id" element={<StartupDetail />} />
           <Route path="/score-tester" element={<ScoreTester />} />
