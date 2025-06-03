@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,8 +24,17 @@ export function useVerticalRecommendations(userId: string) {
         throw new Error(`Database error: ${error.message}`);
       }
 
-      console.log('Vertical recommendations data received:', data);
-      return data || [];
+      // Transform the response to match the expected interface
+      const recommendations = data?.map(item => ({
+        startup_id: item.startup_id,
+        name: item.name,
+        industry: item.industry,
+        stage: item.stage,
+        rl_score: item.rl_score || 0
+      })) || [];
+
+      console.log('Vertical recommendations data received:', recommendations);
+      return recommendations;
     },
     enabled: !!userId && isValidUUID(userId),
     retry: 1,

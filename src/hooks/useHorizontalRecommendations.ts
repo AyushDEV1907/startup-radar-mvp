@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,10 +24,19 @@ export function useHorizontalRecommendations(userId: string) {
         throw new Error(`Database error: ${error.message}`);
       }
 
-      console.log('Recommendations data received:', data);
-      return data || [];
+      // Transform the response to match the expected interface
+      const recommendations = data?.map(item => ({
+        startup_id: item.startup_id,
+        name: item.name,
+        industry: item.industry,
+        stage: item.stage,
+        cf_score: item.cf_score || 0
+      })) || [];
+
+      console.log('Recommendations data received:', recommendations);
+      return recommendations;
     },
-    enabled: !!userId && isValidUUID(userId), // only run if userId is provided and is a valid UUID
-    retry: 1, // Only retry once to avoid spam
+    enabled: !!userId && isValidUUID(userId),
+    retry: 1,
   });
 }
