@@ -10,11 +10,11 @@ interface VerticalRecommendationsProps {
 }
 
 interface VerticalRecommendationStartup {
-  id: string;
+  startup_id: string;
   name: string;
   industry: string;
   stage: string;
-  score: number;
+  rl_score: number;
 }
 
 function VerticalRecommendations({ userId }: VerticalRecommendationsProps) {
@@ -102,7 +102,7 @@ function VerticalRecommendations({ userId }: VerticalRecommendationsProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {recommendations.map((startup: VerticalRecommendationStartup) => (
-          <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+          <div key={startup.startup_id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h4 className="font-semibold">{startup.name}</h4>
@@ -116,15 +116,15 @@ function VerticalRecommendations({ userId }: VerticalRecommendationsProps) {
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-lg font-bold ${startup.score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {startup.score > 0 ? '+' : ''}{startup.score}
+                <div className={`text-lg font-bold ${startup.rl_score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {startup.rl_score > 0 ? '+' : ''}{startup.rl_score}
                 </div>
                 <div className="text-xs text-gray-600">AI Score</div>
               </div>
             </div>
             
             <div className="flex gap-2 mt-3">
-              <Link to={`/startups/${startup.id}`} className="flex-1">
+              <Link to={`/startups/${startup.startup_id}`} className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">
                   View Details
                 </Button>

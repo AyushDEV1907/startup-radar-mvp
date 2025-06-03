@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, BarChart3, Target, Calendar, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import CombinedRecommendations from '@/components/CombinedRecommendations';
+import { CombinedRecommendations } from '@/components/CombinedRecommendations';
 
 const InvestorDashboard = () => {
   const portfolioStats = {
@@ -117,7 +116,7 @@ const InvestorDashboard = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Combined Recommendations */}
-            <CombinedRecommendations userId="550e8400-e29b-41d4-a716-446655440000" />
+            <CombinedRecommendations investorId="550e8400-e29b-41d4-a716-446655440000" />
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">

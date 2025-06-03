@@ -11,10 +11,11 @@ interface RecommendationsProps {
 
 // Updated interface to match the actual database function return type
 interface RecommendationStartup {
-  id: string;
+  startup_id: string;
   name: string;
   industry: string;
   stage: string;
+  cf_score: number;
 }
 
 function Recommendations({ userId }: RecommendationsProps) {
@@ -102,7 +103,7 @@ function Recommendations({ userId }: RecommendationsProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {recommendations.map((startup: RecommendationStartup) => (
-          <div key={startup.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+          <div key={startup.startup_id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h4 className="font-semibold">{startup.name}</h4>
@@ -118,7 +119,7 @@ function Recommendations({ userId }: RecommendationsProps) {
             </div>
             
             <div className="flex gap-2 mt-3">
-              <Link to={`/startups/${startup.id}`} className="flex-1">
+              <Link to={`/startups/${startup.startup_id}`} className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">
                   View Details
                 </Button>
