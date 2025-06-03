@@ -121,19 +121,21 @@ export type Database = {
       get_horizontal_recommendations: {
         Args: { user_id_input: string }
         Returns: {
-          id: string
+          startup_id: string
           name: string
           industry: string
           stage: string
+          cf_score: number
         }[]
       }
       get_vertical_recommendations: {
         Args: { user_id_input: string }
         Returns: {
-          id: string
+          startup_id: string
           name: string
           industry: string
           stage: string
+          rl_score: number
         }[]
       }
     }
