@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,8 @@ import StartupRegister from "./pages/StartupRegister";
 import StartupDashboard from "./pages/StartupDashboard";
 import Startups from "./pages/Startups";
 import StartupDetail from "./pages/StartupDetail";
+import Pricing from "./pages/Pricing";
+import Success from "./pages/Success";
 import NotFound from "./pages/NotFound";
 import ScoreTester from "./ScoreTester";
 
@@ -40,6 +41,8 @@ const App = () => (
           <Route path="/startup/dashboard" element={<StartupDashboard />} />
           <Route path="/startups" element={<Startups />} />
           <Route path="/startups/:id" element={<StartupDetail />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/success" element={<Success />} />
           <Route path="/score-tester" element={<ScoreTester />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -1,11 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, BarChart3, Target, Calendar, Filter } from 'lucide-react';
+import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CombinedRecommendations } from '@/components/CombinedRecommendations';
+import RequirePlan from '@/components/RequirePlan';
+import { useUserPlan } from '@/hooks/useUserPlan';
 
 const InvestorDashboard = () => {
+  const { plan, isPro, isPremium } = useUserPlan();
+
   const portfolioStats = {
     totalInvestments: 12,
     totalInvested: "$850K",
@@ -19,6 +23,18 @@ const InvestorDashboard = () => {
     { action: "Invested", startup: "FinanceFlow Pro", amount: "$25K", date: "2 weeks ago", status: "completed" },
     { action: "Reviewed", startup: "EduTech Innovators", amount: "-", date: "3 weeks ago", status: "pending" }
   ];
+
+  const getPlanIcon = () => {
+    if (isPremium) return <Crown className="w-4 h-4 text-yellow-600" />;
+    if (isPro) return <Zap className="w-4 h-4 text-blue-600" />;
+    return null;
+  };
+
+  const getPlanColor = () => {
+    if (isPremium) return "border-yellow-200 bg-yellow-50";
+    if (isPro) return "border-blue-200 bg-blue-50";
+    return "border-gray-200 bg-gray-50";
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -38,6 +54,9 @@ const InvestorDashboard = () => {
               <Link to="/startups" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Browse Startups
               </Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
+                Pricing
+              </Link>
               <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
             </nav>
           </div>
@@ -45,12 +64,31 @@ const InvestorDashboard = () => {
       </header>
 
       <div className="container mx-auto px-6 py-12">
-        {/* Welcome Section */}
+        {/* Welcome Section with Plan Status */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, Alex</h1>
-          <p className="text-gray-600">
-            You have personalized recommendations based on your investment preferences and activity.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Welcome back, Alex</h1>
+              <p className="text-gray-600">
+                You have personalized recommendations based on your investment preferences and activity.
+              </p>
+            </div>
+            <Card className={`border ${getPlanColor()}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  {getPlanIcon()}
+                  <span className="font-medium capitalize">{plan} Plan</span>
+                </div>
+                {plan === 'free' && (
+                  <Link to="/pricing">
+                    <Button size="sm" className="mt-2 w-full">
+                      Upgrade for More →
+                    </Button>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -115,8 +153,14 @@ const InvestorDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Combined Recommendations */}
-            <CombinedRecommendations investorId="550e8400-e29b-41d4-a716-446655440000" />
+            {/* Combined Recommendations with Plan Protection */}
+            <RequirePlan 
+              userPlan={plan} 
+              allowedPlans={['pro', 'premium']}
+              featureName="AI-powered recommendations"
+            >
+              <CombinedRecommendations investorId="550e8400-e29b-41d4-a716-446655440000" />
+            </RequirePlan>
 
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
