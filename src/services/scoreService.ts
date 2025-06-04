@@ -25,11 +25,11 @@ export const calculateScore = async (data: ScoreRequest): Promise<ScoreResponse>
   try {
     console.log('Sending request body:', data);
     
-    const response = await fetch("/functions/v1/score", {
+    const response = await fetch("https://hzboruygxgqfnfmifuuu.supabase.co/functions/v1/score", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6Ym9ydXlneGdxZm5mbWlmdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzY1MzIsImV4cCI6MjA2NDAxMjUzMn0.LxcrQajRt62Op1A63VAoxxMjJpFIyU325mBozcjZfOU`,
       },
       body: JSON.stringify(data),
     });
