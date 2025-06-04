@@ -1,17 +1,22 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMarketplaceStartups } from '@/hooks/useStartups';
 import { StartupCard } from '@/components/StartupCard';
-import { Search, Filter } from 'lucide-react';
+import { StartupSearch } from '@/components/StartupSearch';
 
 export default function Startups() {
   const { data: startups, isLoading, error } = useMarketplaceStartups();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('');
   const [selectedStage, setSelectedStage] = useState('');
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedIndustry('');
+    setSelectedStage('');
+  };
 
   if (isLoading) {
     return (
@@ -37,10 +42,13 @@ export default function Startups() {
     );
   }
 
-  // Filter startups based on search and filters
+  // Enhanced filtering logic
   const filteredStartups = startups?.filter(startup => {
-    const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         startup.industry.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = searchTerm === '' || 
+      startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      startup.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (startup.metrics && JSON.stringify(startup.metrics).toLowerCase().includes(searchTerm.toLowerCase()));
+    
     const matchesIndustry = !selectedIndustry || startup.industry === selectedIndustry;
     const matchesStage = !selectedStage || startup.stage === selectedStage;
     
@@ -58,78 +66,33 @@ export default function Startups() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <h1 className="text-2xl font-bold text-gray-900">Startup Marketplace</h1>
-            <p className="text-gray-600">{filteredStartups.length} startups available</p>
+            <div className="text-gray-600">
+              {filteredStartups.length} of {startups?.length || 0} startups
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filters */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Search & Filter
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search startups..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <select
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Industries</option>
-                {industries.map(industry => (
-                  <option key={industry} value={industry}>{industry}</option>
-                ))}
-              </select>
-              <select
-                value={selectedStage}
-                onChange={(e) => setSelectedStage(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Stages</option>
-                {stages.map(stage => (
-                  <option key={stage} value={stage}>{stage}</option>
-                ))}
-              </select>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedIndustry('');
-                  setSelectedStage('');
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Enhanced Search and Filters */}
+        <StartupSearch
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedIndustry={selectedIndustry}
+          setSelectedIndustry={setSelectedIndustry}
+          selectedStage={selectedStage}
+          setSelectedStage={setSelectedStage}
+          industries={industries}
+          stages={stages}
+          onClearFilters={clearFilters}
+        />
 
-        {/* Startups Grid */}
+        {/* Results */}
         {filteredStartups.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-gray-500 mb-4">No startups found matching your criteria.</p>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedIndustry('');
-                  setSelectedStage('');
-                }}
-              >
+              <Button variant="outline" onClick={clearFilters}>
                 View All Startups
               </Button>
             </CardContent>

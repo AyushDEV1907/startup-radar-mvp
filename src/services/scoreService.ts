@@ -1,8 +1,20 @@
 
 interface ScoreRequest {
-  industryMatch: number;
-  stageMatch: number;
-  traction: number;
+  investorPrefs: {
+    industries: string[];
+    stages: string[];
+    valuationMin: number;
+    valuationMax: number;
+    maxBurnRate: number;
+  };
+  startup: {
+    industry: string;
+    stage: string;
+    valuation: number;
+    mrrGrowth: number;
+    burnRate: number;
+    founderExperienceScore: number;
+  };
 }
 
 interface ScoreResponse {
@@ -10,17 +22,29 @@ interface ScoreResponse {
 }
 
 export const calculateScore = async (data: ScoreRequest): Promise<ScoreResponse> => {
-  const response = await fetch("/api/score", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    console.log('Sending request body:', data);
+    
+    const response = await fetch("/functions/v1/score", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Score calculation failed: ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Score calculation failed:', response.status, errorText);
+      throw new Error(`Score calculation failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('Response data:', result);
+    return result;
+  } catch (error) {
+    console.error('Score calculation error:', error);
+    throw error;
   }
-
-  return response.json();
 };

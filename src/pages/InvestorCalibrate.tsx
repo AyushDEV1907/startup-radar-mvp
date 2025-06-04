@@ -84,12 +84,28 @@ const InvestorCalibrate = () => {
     newDecisions[currentCard] = decision;
     setDecisions(newDecisions);
 
-    // Calculate score for this startup
+    // Calculate score using the enhanced ML model
     const startup = demoStartups[currentCard];
+    const investorPrefs = {
+      industries: ["HealthTech", "Tech", "CleanTech", "HR Tech", "Cybersecurity", "EdTech"],
+      stages: ["Pre-Seed", "Seed", "Series A"],
+      valuationMin: 1000000,
+      valuationMax: 50000000,
+      maxBurnRate: 100000
+    };
+
+    const startupData = {
+      industry: startup.industry,
+      stage: startup.stage,
+      valuation: 5000000, // Default valuation for demo
+      mrrGrowth: parseFloat(startup.metrics.growth.replace(/[+%\s]/g, '')) / 100 || 0.1,
+      burnRate: 30000, // Default burn rate for demo
+      founderExperienceScore: Math.random() * 10 // Random score for demo
+    };
+
     await calculate({
-      industryMatch: 0.8, // You can customize this based on startup data
-      stageMatch: 0.6,
-      traction: 0.7
+      investorPrefs,
+      startup: startupData
     });
 
     console.log(`Decision: ${decision}, Score: ${score}`);
