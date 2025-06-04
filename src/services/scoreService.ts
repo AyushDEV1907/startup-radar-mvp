@@ -15,10 +15,13 @@ interface ScoreRequest {
     burnRate: number;
     founderExperienceScore: number;
   };
+  decision?: 'invest' | 'pass'; // Add decision to help with recalibration
+  investorId?: string; // Add investor ID for personalization
 }
 
 interface ScoreResponse {
   score: number;
+  calibrationWeight?: number; // Weight based on investor's past decisions
 }
 
 export const calculateScore = async (data: ScoreRequest): Promise<ScoreResponse> => {
@@ -46,5 +49,28 @@ export const calculateScore = async (data: ScoreRequest): Promise<ScoreResponse>
   } catch (error) {
     console.error('Score calculation error:', error);
     throw error;
+  }
+};
+
+// Store calibration decision for improving future recommendations
+export const storeCalibrationDecision = async (data: {
+  investorId: string;
+  startupId: string;
+  decision: 'invest' | 'pass';
+  score: number;
+  startupData: any;
+}) => {
+  try {
+    // This would typically store in your database
+    // For now, we'll use localStorage as a simple solution
+    const calibrationData = JSON.parse(localStorage.getItem('calibrationData') || '[]');
+    calibrationData.push({
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('calibrationData', JSON.stringify(calibrationData));
+    console.log('Calibration decision stored:', data);
+  } catch (error) {
+    console.error('Error storing calibration decision:', error);
   }
 };
