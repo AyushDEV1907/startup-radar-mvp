@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,11 +27,11 @@ export function useVerticalRecommendations(userId: string) {
 
       // Transform the response to match the expected interface
       const recommendations = data?.map(item => ({
-        startup_id: item.startup_id,
+        startup_id: item.id, // Map 'id' to 'startup_id'
         name: item.name,
         industry: item.industry,
         stage: item.stage,
-        rl_score: item.rl_score || 0
+        rl_score: item.score || 0 // Map 'score' to 'rl_score'
       })) || [];
 
       console.log('Vertical recommendations data received:', recommendations);
