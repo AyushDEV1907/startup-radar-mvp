@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLinUCBScore, useLinUCBUpdate } from '@/hooks/useLinUCBBandit';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { TrendingUp, DollarSign, Users } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, RefreshCw } from 'lucide-react';
 
 interface LinUCBRecommendationsProps {
   investorId: string;
@@ -26,7 +26,7 @@ export default function LinUCBRecommendations({
   investorId, 
   topN = 10 
 }: LinUCBRecommendationsProps) {
-  const { data: linucbData, isLoading, error } = useLinUCBScore(investorId, topN);
+  const { data: linucbData, isLoading, error, refetch } = useLinUCBScore(investorId, topN);
   const linucbUpdate = useLinUCBUpdate(investorId);
   const [currentStartup, setCurrentStartup] = useState<StartupDetails | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -35,16 +35,30 @@ export default function LinUCBRecommendations({
   useEffect(() => {
     if (linucbData?.recommendations && linucbData.recommendations.length > 0 && currentIndex < linucbData.recommendations.length) {
       const fetchStartupDetails = async () => {
-        const recommendation = linucbData.recommendations[currentIndex];
-        const { data, error } = await supabase
-          .from('startups')
-          .select('*')
-          .eq('id', recommendation.startup_id)
-          .single();
+        try {
+          const recommendation = linucbData.recommendations[currentIndex];
+          console.log('Fetching startup details for:', recommendation.startup_id);
+          
+          const { data, error } = await supabase
+            .from('startups')
+            .select('*')
+            .eq('id', recommendation.startup_id)
+            .single();
 
-        if (!error && data) {
-          setCurrentStartup(data);
-          setCurrentScore(recommendation.score);
+          if (error) {
+            console.error('Error fetching startup details:', error);
+            toast.error('Failed to load startup details');
+            return;
+          }
+
+          if (data) {
+            setCurrentStartup(data);
+            setCurrentScore(recommendation.score);
+            console.log('Loaded startup details:', data);
+          }
+        } catch (error) {
+          console.error('Error in fetchStartupDetails:', error);
+          toast.error('Failed to load startup details');
         }
       };
 
@@ -53,9 +67,13 @@ export default function LinUCBRecommendations({
   }, [linucbData, currentIndex]);
 
   const handleAction = async (action: 'invest' | 'pass') => {
-    if (!currentStartup) return;
+    if (!currentStartup) {
+      toast.error('No startup selected');
+      return;
+    }
 
     const reward = action === 'invest' ? 1 : 0;
+    console.log(`Processing ${action} action for startup ${currentStartup.name}`);
 
     try {
       await linucbUpdate.mutateAsync({
@@ -63,12 +81,27 @@ export default function LinUCBRecommendations({
         reward
       });
 
-      toast.success(`LinUCB updated: ${action}`);
-      setCurrentIndex(prev => prev + 1);
+      toast.success(`${action === 'invest' ? 'Investment interest' : 'Pass'} recorded! LinUCB updated.`);
+      
+      // Move to next startup
+      if (currentIndex < (linucbData?.recommendations.length || 0) - 1) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        toast.success('All recommendations reviewed! Refreshing...');
+        setCurrentIndex(0);
+        refetch();
+      }
     } catch (error) {
       console.error('Error updating LinUCB:', error);
-      toast.error('Failed to update recommendations');
+      toast.error('Failed to update recommendations. Please try again.');
     }
+  };
+
+  const handleRefresh = () => {
+    console.log('Refreshing LinUCB recommendations');
+    setCurrentIndex(0);
+    refetch();
+    toast.success('Refreshing recommendations...');
   };
 
   if (isLoading) {
@@ -94,36 +127,100 @@ export default function LinUCBRecommendations({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            LinUCB Contextual Bandit
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              LinUCB Contextual Bandit
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-red-500">
-            Error: {error.message}
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              Error: {error.message}
+            </div>
+            <p className="text-gray-600">Please try refreshing or contact support if the issue persists.</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!linucbData?.recommendations || linucbData.recommendations.length === 0 || currentIndex >= linucbData.recommendations.length) {
+  if (!linucbData?.recommendations || linucbData.recommendations.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            LinUCB Contextual Bandit
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              LinUCB Contextual Bandit
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <p className="text-gray-600 mb-4">
-              No more startups to review. Your preferences have been learned!
+              No recommendations available. This might be because:
+            </p>
+            <ul className="text-sm text-gray-500 space-y-1 mb-4">
+              <li>• You've reviewed all available startups</li>
+              <li>• No startups match your current preferences</li>
+              <li>• The system is still learning your preferences</li>
+            </ul>
+            <p className="text-sm text-gray-500">
+              Total candidates explored: {linucbData?.total_candidates || 0}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (currentIndex >= linucbData.recommendations.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              LinUCB Contextual Bandit
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Get More
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-gray-600 mb-4">
+              Great job! You've reviewed all current recommendations.
             </p>
             <p className="text-sm text-gray-500">
-              Explored {linucbData?.total_candidates || 0} candidates
+              Explored {linucbData.total_candidates} candidates total
             </p>
           </div>
         </CardContent>
@@ -141,7 +238,9 @@ export default function LinUCBRecommendations({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">Loading startup details...</div>
+          <div className="text-center py-8">
+            <div className="animate-pulse">Loading startup details...</div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -158,7 +257,7 @@ export default function LinUCBRecommendations({
             LinUCB Contextual Bandit
           </div>
           <Badge variant="secondary">
-            Score: {(currentScore * 100).toFixed(1)}
+            Score: {(currentScore * 100).toFixed(1)}%
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -171,7 +270,7 @@ export default function LinUCBRecommendations({
           </div>
         </div>
 
-        {metrics && (
+        {metrics && Object.keys(metrics).length > 0 && (
           <div className="grid grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-green-600" />
@@ -209,7 +308,7 @@ export default function LinUCBRecommendations({
             className="flex-1 bg-green-600 hover:bg-green-700"
             disabled={linucbUpdate.isPending}
           >
-            Invest
+            {linucbUpdate.isPending ? 'Processing...' : 'Invest'}
           </Button>
           <Button
             onClick={() => handleAction('pass')}
@@ -217,13 +316,13 @@ export default function LinUCBRecommendations({
             className="flex-1"
             disabled={linucbUpdate.isPending}
           >
-            Pass
+            {linucbUpdate.isPending ? 'Processing...' : 'Pass'}
           </Button>
         </div>
 
         <div className="text-xs text-muted-foreground text-center pt-2">
           Startup {currentIndex + 1} of {linucbData.recommendations.length} • 
-          {linucbData.total_candidates} total candidates
+          {linucbData.total_candidates} total candidates explored
         </div>
       </CardContent>
     </Card>

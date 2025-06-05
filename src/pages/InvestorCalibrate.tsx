@@ -1,20 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, TrendingUp, CheckCircle, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useScoreCalculation } from '@/hooks/useScoreCalculation';
+import { useLinUCBUpdate } from '@/hooks/useLinUCBBandit';
 import { generateDiversifiedStartups } from '@/services/calibrationService';
+import { toast } from 'sonner';
 
 const InvestorCalibrate = () => {
+  const navigate = useNavigate();
   const [currentCard, setCurrentCard] = useState(0);
   const [decisions, setDecisions] = useState<Array<'invest' | 'pass' | null>>([null, null, null, null, null]);
   const [scores, setScores] = useState<Array<number | null>>([null, null, null, null, null]);
   const [demoStartups, setDemoStartups] = useState<any[]>([]);
   const [investorId] = useState(() => `investor_${Date.now()}`); // Simulated investor ID
+  
   const { score, isLoading, error, calculate, getCalibrationInsights } = useScoreCalculation();
+  const linucbUpdate = useLinUCBUpdate(investorId);
 
   // Initialize diversified startups based on preferences
   useEffect(() => {
@@ -37,49 +41,75 @@ const InvestorCalibrate = () => {
   }, []);
 
   const handleDecision = async (decision: 'invest' | 'pass') => {
-    if (demoStartups.length === 0) return;
+    if (demoStartups.length === 0) {
+      toast.error('No startups available');
+      return;
+    }
 
     const newDecisions = [...decisions];
     newDecisions[currentCard] = decision;
     setDecisions(newDecisions);
 
-    // Calculate score using the enhanced ML model
-    const startup = demoStartups[currentCard];
-    const investorPrefs = {
-      industries: ["HealthTech", "FinTech", "EdTech", "CleanTech", "HR Tech", "Cybersecurity", "AgTech", "E-commerce"],
-      stages: ["Pre-Seed", "Seed", "Series A"],
-      valuationMin: 1000000,
-      valuationMax: 50000000,
-      maxBurnRate: 100000
-    };
+    try {
+      // Calculate score using the enhanced ML model
+      const startup = demoStartups[currentCard];
+      const investorPrefs = {
+        industries: ["HealthTech", "FinTech", "EdTech", "CleanTech", "HR Tech", "Cybersecurity", "AgTech", "E-commerce"],
+        stages: ["Pre-Seed", "Seed", "Series A"],
+        valuationMin: 1000000,
+        valuationMax: 50000000,
+        maxBurnRate: 100000
+      };
 
-    const startupData = {
-      industry: startup.industry,
-      stage: startup.stage,
-      valuation: startup.valuation,
-      mrrGrowth: startup.mrrGrowth,
-      burnRate: startup.burnRate,
-      founderExperienceScore: startup.founderExperienceScore
-    };
+      const startupData = {
+        industry: startup.industry,
+        stage: startup.stage,
+        valuation: startup.valuation,
+        mrrGrowth: startup.mrrGrowth,
+        burnRate: startup.burnRate,
+        founderExperienceScore: startup.founderExperienceScore
+      };
 
-    await calculate({
-      investorPrefs,
-      startup: startupData,
-      decision,
-      investorId
-    });
+      // Calculate ML score
+      await calculate({
+        investorPrefs,
+        startup: startupData,
+        decision,
+        investorId
+      });
 
-    // Store the score for this startup
-    if (score !== null) {
-      const newScores = [...scores];
-      newScores[currentCard] = score;
-      setScores(newScores);
-    }
+      // Store the score for this startup
+      if (score !== null) {
+        const newScores = [...scores];
+        newScores[currentCard] = score;
+        setScores(newScores);
+      }
 
-    console.log(`Decision: ${decision}, Score: ${score}, Startup: ${startup.name}`);
+      // Update LinUCB bandit with this decision
+      const reward = decision === 'invest' ? 1 : 0;
+      try {
+        await linucbUpdate.mutateAsync({
+          startupId: `demo_${currentCard}_${startup.name.replace(/\s+/g, '_')}`,
+          reward
+        });
+        console.log(`LinUCB updated: ${decision} for ${startup.name}`);
+      } catch (linucbError) {
+        console.error('LinUCB update failed:', linucbError);
+        // Don't block the flow for LinUCB errors during calibration
+      }
 
-    if (currentCard < demoStartups.length - 1) {
-      setCurrentCard(currentCard + 1);
+      console.log(`Decision: ${decision}, Score: ${score}, Startup: ${startup.name}`);
+
+      // Move to next startup or complete
+      if (currentCard < demoStartups.length - 1) {
+        setCurrentCard(currentCard + 1);
+      }
+
+      toast.success(`${decision === 'invest' ? 'Investment' : 'Pass'} recorded!`);
+      
+    } catch (error) {
+      console.error('Error processing decision:', error);
+      toast.error('Failed to process decision. Please try again.');
     }
   };
 
@@ -219,17 +249,17 @@ const InvestorCalibrate = () => {
                     size="lg"
                     className="flex-1 py-4 border-2 hover:bg-red-50 hover:border-red-200 hover:text-red-700 transition-all duration-300"
                     onClick={() => handleDecision('pass')}
-                    disabled={isLoading}
+                    disabled={isLoading || linucbUpdate.isPending}
                   >
-                    {isLoading ? 'Calculating...' : 'Pass'}
+                    {isLoading || linucbUpdate.isPending ? 'Processing...' : 'Pass'}
                   </Button>
                   <Button
                     size="lg"
                     className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => handleDecision('invest')}
-                    disabled={isLoading}
+                    disabled={isLoading || linucbUpdate.isPending}
                   >
-                    {isLoading ? 'Calculating...' : 'Invest'}
+                    {isLoading || linucbUpdate.isPending ? 'Processing...' : 'Invest'}
                   </Button>
                 </div>
               </CardContent>
@@ -282,15 +312,17 @@ const InvestorCalibrate = () => {
               )}
             </div>
             
-            <Link to="/investor-dashboard">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Go to Dashboard
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => {
+                toast.success('Redirecting to your personalized dashboard!');
+                navigate('/investor-dashboard');
+              }}
+            >
+              Go to Dashboard
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
           </div>
         )}
       </div>

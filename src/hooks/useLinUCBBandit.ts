@@ -21,6 +21,8 @@ export function useLinUCBScore(investorId: string, topN: number = 10) {
   return useQuery({
     queryKey: ['linucb-score', investorId, topN],
     queryFn: async (): Promise<LinUCBResponse> => {
+      console.log('Calling LinUCB scoring for investor:', investorId);
+      
       const { data, error } = await supabase.functions.invoke('linucb-bandit', {
         body: {
           action: 'score',
@@ -34,10 +36,12 @@ export function useLinUCBScore(investorId: string, topN: number = 10) {
         throw new Error(`Failed to get LinUCB scores: ${error.message}`);
       }
 
+      console.log('LinUCB scoring response:', data);
       return data;
     },
     enabled: !!investorId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 }
 
@@ -52,6 +56,8 @@ export function useLinUCBUpdate(investorId: string) {
       startupId: string;
       reward: number;
     }) => {
+      console.log('Updating LinUCB for investor:', investorId, 'startup:', startupId, 'reward:', reward);
+      
       const { data, error } = await supabase.functions.invoke('linucb-bandit', {
         body: {
           action: 'update',
@@ -66,11 +72,16 @@ export function useLinUCBUpdate(investorId: string) {
         throw new Error(`Failed to update LinUCB: ${error.message}`);
       }
 
+      console.log('LinUCB update response:', data);
       return data;
     },
     onSuccess: () => {
       // Invalidate LinUCB scores to get fresh recommendations
       queryClient.invalidateQueries({ queryKey: ['linucb-score', investorId] });
+      console.log('LinUCB queries invalidated after successful update');
+    },
+    onError: (error) => {
+      console.error('LinUCB update failed:', error);
     }
   });
 }

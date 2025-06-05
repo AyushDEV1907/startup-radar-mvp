@@ -9,12 +9,13 @@ import { useRecordInteraction } from '@/hooks/useInteractions';
 import { useInvestorAuth } from '@/hooks/useInvestorAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, TrendingUp, DollarSign, Users, ExternalLink, ArrowLeft, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function StartupDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useInvestorAuth();
-  const { toast } = useToast();
+  const { toast: shadcnToast } = useToast();
   
   const { data: startup, isLoading, error } = useStartupDetail(id!);
   const recordInteractionMutation = useRecordInteraction();
@@ -49,7 +50,8 @@ export default function StartupDetail() {
 
   const handleInteraction = async (action: 'invest' | 'pass') => {
     if (!user) {
-      toast({
+      toast.error('Please sign in to interact with startups');
+      shadcnToast({
         title: "Authentication Required",
         description: "Please sign in to interact with startups",
         variant: "destructive"
@@ -57,22 +59,37 @@ export default function StartupDetail() {
       return;
     }
 
+    if (!id) {
+      toast.error('Invalid startup ID');
+      return;
+    }
+
     try {
+      console.log(`Recording ${action} interaction for startup ${id}`);
+      
       await recordInteractionMutation.mutateAsync({
         investorId: user.id,
-        startupId: startup.id,
+        startupId: id,
         action,
         isDemo: false
       });
 
-      toast({
+      const message = `You have ${action === 'invest' ? 'invested in' : 'passed on'} ${startup.name}`;
+      toast.success(message);
+      shadcnToast({
         title: "Interaction Recorded",
-        description: `You have ${action === 'invest' ? 'invested in' : 'passed on'} ${startup.name}`,
+        description: message,
       });
+
+      console.log(`Successfully recorded ${action} for startup ${startup.name}`);
+      
     } catch (error) {
-      toast({
+      console.error('Error recording interaction:', error);
+      const errorMessage = 'Failed to record interaction. Please try again.';
+      toast.error(errorMessage);
+      shadcnToast({
         title: "Error",
-        description: "Failed to record interaction. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -194,7 +211,7 @@ export default function StartupDetail() {
                     className="w-full bg-green-600 hover:bg-green-700"
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
-                    Invest
+                    {recordInteractionMutation.isPending ? 'Recording...' : 'Invest'}
                   </Button>
                   <Button
                     onClick={() => handleInteraction('pass')}
@@ -203,7 +220,7 @@ export default function StartupDetail() {
                     className="w-full"
                   >
                     <ThumbsDown className="w-4 h-4 mr-2" />
-                    Pass
+                    {recordInteractionMutation.isPending ? 'Recording...' : 'Pass'}
                   </Button>
                 </CardContent>
               </Card>
