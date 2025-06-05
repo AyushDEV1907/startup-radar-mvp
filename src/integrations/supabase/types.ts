@@ -51,6 +51,35 @@ export type Database = {
           },
         ]
       }
+      linucb_params: {
+        Row: {
+          a: Json
+          b: Json
+          investor_id: string
+          last_updated: string | null
+        }
+        Insert: {
+          a?: Json
+          b?: Json
+          investor_id: string
+          last_updated?: string | null
+        }
+        Update: {
+          a?: Json
+          b?: Json
+          investor_id?: string
+          last_updated?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linucb_params_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startups: {
         Row: {
           created_at: string
@@ -132,13 +161,13 @@ export type Database = {
         }[]
       }
       get_vertical_recommendations: {
-        Args: { user_id_input: string }
+        Args: { user_id_input: string } | { user_id_input: string }
         Returns: {
-          startup_id: string
+          id: string
           name: string
           industry: string
           stage: string
-          rl_score: number
+          score: number
         }[]
       }
     }
