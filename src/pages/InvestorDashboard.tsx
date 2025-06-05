@@ -1,15 +1,37 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap } from 'lucide-react';
+import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CombinedRecommendations } from '@/components/CombinedRecommendations';
 import RequirePlan from '@/components/RequirePlan';
 import { useUserPlan } from '@/hooks/useUserPlan';
 import LinUCBRecommendations from '@/components/LinUCBRecommendations';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const InvestorDashboard = () => {
   const { plan, isPro, isPremium } = useUserPlan();
+
+  // Seed demo startups when dashboard loads
+  useEffect(() => {
+    const seedDemoStartups = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('seed-demo-startups');
+        
+        if (error) {
+          console.error('Error seeding demo startups:', error);
+        } else {
+          console.log('Demo startups seeded:', data);
+        }
+      } catch (error) {
+        console.error('Failed to seed demo startups:', error);
+      }
+    };
+
+    seedDemoStartups();
+  }, []);
 
   const portfolioStats = {
     totalInvestments: 12,
@@ -37,6 +59,16 @@ const InvestorDashboard = () => {
     return "border-gray-200 bg-gray-50";
   };
 
+  const handleTryDemo = async () => {
+    try {
+      await supabase.functions.invoke('seed-demo-startups');
+      toast.success('Demo startups loaded! Check the marketplace and recommendations.');
+    } catch (error) {
+      console.error('Error loading demo:', error);
+      toast.error('Failed to load demo data');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
@@ -58,6 +90,10 @@ const InvestorDashboard = () => {
               <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Pricing
               </Link>
+              <Button onClick={handleTryDemo} variant="outline" size="sm" className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                Try Demo
+              </Button>
               <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
             </nav>
           </div>
@@ -71,7 +107,7 @@ const InvestorDashboard = () => {
             <div>
               <h1 className="text-3xl font-bold mb-2">Welcome back, Alex</h1>
               <p className="text-gray-600">
-                You have personalized recommendations based on your investment preferences and activity.
+                Discover personalized startup recommendations powered by AI contextual bandits.
               </p>
             </div>
             <Card className={`border ${getPlanColor()}`}>
@@ -94,7 +130,7 @@ const InvestorDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -108,7 +144,7 @@ const InvestorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -122,7 +158,7 @@ const InvestorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -136,7 +172,7 @@ const InvestorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -270,9 +306,13 @@ const InvestorDashboard = () => {
                     Recalibrate Preferences
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full justify-start">
-                  <Calendar className="mr-2 w-4 h-4" />
-                  Schedule Demo
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={handleTryDemo}
+                >
+                  <Play className="mr-2 w-4 h-4" />
+                  Load Demo Data
                 </Button>
               </CardContent>
             </Card>
