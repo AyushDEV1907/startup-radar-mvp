@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bandit_state: {
+        Row: {
+          a: Json
+          b: Json
+          created_at: string | null
+          feature_dimension: number
+          investor_id: string
+          last_updated: string | null
+        }
+        Insert: {
+          a?: Json
+          b?: Json
+          created_at?: string | null
+          feature_dimension?: number
+          investor_id: string
+          last_updated?: string | null
+        }
+        Update: {
+          a?: Json
+          b?: Json
+          created_at?: string | null
+          feature_dimension?: number
+          investor_id?: string
+          last_updated?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bandit_state_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interactions: {
         Row: {
           action: string

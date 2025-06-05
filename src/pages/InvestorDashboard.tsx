@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CombinedRecommendations } from '@/components/CombinedRecommendations';
 import RequirePlan from '@/components/RequirePlan';
 import { useUserPlan } from '@/hooks/useUserPlan';
+import LinUCBRecommendations from '@/components/LinUCBRecommendations';
 
 const InvestorDashboard = () => {
   const { plan, isPro, isPremium } = useUserPlan();
@@ -153,6 +154,15 @@ const InvestorDashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* LinUCB Contextual Bandit Recommendations */}
+            <RequirePlan 
+              userPlan={plan} 
+              allowedPlans={['pro', 'premium']}
+              featureName="LinUCB contextual bandit recommendations"
+            >
+              <LinUCBRecommendations investorId="550e8400-e29b-41d4-a716-446655440000" topN={10} />
+            </RequirePlan>
+
             {/* Combined Recommendations with Plan Protection */}
             <RequirePlan 
               userPlan={plan} 
