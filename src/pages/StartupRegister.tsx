@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Building2, Upload, DollarSign, TrendingUp } from 'lucide-react';
 
 const INDUSTRIES = [
@@ -26,21 +27,9 @@ export default function StartupRegister() {
   const [burnRate, setBurnRate] = useState('');
   const [founderExperienceScore, setFounderExperienceScore] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/startup/signup');
-        return;
-      }
-      setUser(user);
-    };
-    getUser();
-  }, [navigate]);
+  const { user } = useAuth();
 
   const validateForm = () => {
     if (!companyName.trim()) {
@@ -172,7 +161,7 @@ export default function StartupRegister() {
         description: "Your startup has been registered successfully!",
       });
 
-      navigate('/startup/dashboard');
+      navigate('/founder/dashboard');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -185,57 +174,65 @@ export default function StartupRegister() {
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-sm sm:text-base">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader className="text-center px-4 sm:px-6">
           <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
             <Building2 className="w-6 h-6 text-green-600" />
           </div>
-          <CardTitle className="text-2xl font-bold">Register Your Startup</CardTitle>
-          <p className="text-gray-600">Tell us about your company to join our marketplace</p>
+          <CardTitle className="text-xl sm:text-2xl font-bold">Register Your Startup</CardTitle>
+          <p className="text-sm sm:text-base text-gray-600">Tell us about your company to join our marketplace</p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="companyName" className="text-sm">Company Name</Label>
               <Input
                 id="companyName"
                 type="text"
                 placeholder="Enter your company name"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
+                className="text-sm"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="industry" className="text-sm">Industry</Label>
                 <Select value={industry} onValueChange={setIndustry}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
                   <SelectContent>
                     {INDUSTRIES.map(ind => (
-                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                      <SelectItem key={ind} value={ind} className="text-sm">{ind}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="stage">Funding Stage</Label>
+                <Label htmlFor="stage" className="text-sm">Funding Stage</Label>
                 <Select value={stage} onValueChange={setStage}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Select stage" />
                   </SelectTrigger>
                   <SelectContent>
                     {STAGES.map(stg => (
-                      <SelectItem key={stg} value={stg}>{stg}</SelectItem>
+                      <SelectItem key={stg} value={stg} className="text-sm">{stg}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -243,7 +240,7 @@ export default function StartupRegister() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pitchDeckUrl">Pitch Deck URL</Label>
+              <Label htmlFor="pitchDeckUrl" className="text-sm">Pitch Deck URL</Label>
               <div className="relative">
                 <Upload className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <Input
@@ -252,16 +249,16 @@ export default function StartupRegister() {
                   placeholder="https://example.com/pitch-deck.pdf"
                   value={pitchDeckUrl}
                   onChange={(e) => setPitchDeckUrl(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm"
                   required
                 />
               </div>
-              <p className="text-sm text-gray-500">URL must point to a PDF file</p>
+              <p className="text-xs text-gray-500">URL must point to a PDF file</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="mrr">Monthly Recurring Revenue ($)</Label>
+                <Label htmlFor="mrr" className="text-sm">Monthly Recurring Revenue ($)</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <Input
@@ -272,14 +269,14 @@ export default function StartupRegister() {
                     placeholder="e.g., 50000"
                     value={mrr}
                     onChange={(e) => setMrr(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="burnRate">Monthly Burn Rate ($)</Label>
+                <Label htmlFor="burnRate" className="text-sm">Monthly Burn Rate ($)</Label>
                 <div className="relative">
                   <TrendingUp className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <Input
@@ -290,14 +287,14 @@ export default function StartupRegister() {
                     placeholder="e.g., 30000"
                     value={burnRate}
                     onChange={(e) => setBurnRate(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="founderScore">Founder Experience Score (0-10)</Label>
+              <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                <Label htmlFor="founderScore" className="text-sm">Founder Experience Score (0-10)</Label>
                 <Input
                   id="founderScore"
                   type="number"
@@ -307,6 +304,7 @@ export default function StartupRegister() {
                   placeholder="e.g., 7.5"
                   value={founderExperienceScore}
                   onChange={(e) => setFounderExperienceScore(e.target.value)}
+                  className="text-sm"
                   required
                 />
               </div>
@@ -314,7 +312,7 @@ export default function StartupRegister() {
 
             <Button 
               type="submit" 
-              className="w-full bg-green-600 hover:bg-green-700" 
+              className="w-full bg-green-600 hover:bg-green-700 text-sm" 
               disabled={isLoading}
             >
               {isLoading ? 'Registering Startup...' : 'Register Startup'}

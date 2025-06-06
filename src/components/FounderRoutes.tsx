@@ -8,6 +8,7 @@ import NotFound from '@/pages/NotFound';
 export default function FounderRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<StartupDashboard />} />
       <Route path="/dashboard" element={<StartupDashboard />} />
       <Route path="/register" element={<StartupRegister />} />
       <Route path="*" element={<NotFound />} />

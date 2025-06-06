@@ -74,23 +74,38 @@ export default function Auth() {
         options: {
           data: {
             role: role
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth`
         }
       });
 
       if (error) {
-        toast({
-          title: "Signup Failed",
-          description: error.message,
-          variant: "destructive"
-        });
+        if (error.message.includes('User already registered')) {
+          toast({
+            title: "Account exists",
+            description: "An account with this email already exists. Please sign in instead.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Signup Failed",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
         return;
       }
 
-      if (data.user) {
+      if (data.user && !data.session) {
+        toast({
+          title: "Check your email",
+          description: "We sent you a confirmation link. Please check your email and click the link to complete registration.",
+        });
+      } else if (data.session) {
+        // User is automatically signed in (email confirmation disabled)
         toast({
           title: "Success!",
-          description: "Account created successfully. Please check your email for verification.",
+          description: "Account created successfully!",
         });
 
         // Navigate based on role
@@ -125,11 +140,25 @@ export default function Auth() {
       });
 
       if (error) {
-        toast({
-          title: "Sign In Failed",
-          description: error.message,
-          variant: "destructive"
-        });
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your email and click the confirmation link before signing in.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password and try again.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Sign In Failed",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
         return;
       }
 
@@ -169,25 +198,25 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
             <TrendingUp className="w-6 h-6 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to InvestRadar</CardTitle>
-          <p className="text-gray-600">Sign in to your account or create a new one</p>
+          <CardTitle className="text-xl sm:text-2xl font-bold">Welcome to InvestRadar</CardTitle>
+          <p className="text-sm sm:text-base text-gray-600">Sign in to your account or create a new one</p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin" className="text-sm">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="signin">
+            <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email" className="text-sm">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -196,14 +225,14 @@ export default function Auth() {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password" className="text-sm">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -212,7 +241,7 @@ export default function Auth() {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                       required
                     />
                   </div>
@@ -220,7 +249,7 @@ export default function Auth() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full text-sm" 
                   disabled={isLoading}
                 >
                   <LogIn className="w-4 h-4 mr-2" />
@@ -229,10 +258,10 @@ export default function Auth() {
               </form>
             </TabsContent>
             
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="text-sm">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -241,16 +270,16 @@ export default function Auth() {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">I am a...</Label>
+                  <Label htmlFor="role" className="text-sm">I am a...</Label>
                   <Select value={role} onValueChange={(value: 'investor' | 'founder') => setRole(value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -261,7 +290,7 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="text-sm">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -270,14 +299,14 @@ export default function Auth() {
                       placeholder="Create a password (min 8 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password" className="text-sm">Confirm Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                     <Input
@@ -286,7 +315,7 @@ export default function Auth() {
                       placeholder="Confirm your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 text-sm"
                       required
                     />
                   </div>
@@ -294,7 +323,7 @@ export default function Auth() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full text-sm" 
                   disabled={isLoading}
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
