@@ -1,20 +1,16 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { supabase } from '@/integrations/supabase/client';
 import Index from "./pages/Index";
-import InvestorOnboard from "./pages/InvestorOnboard";
-import InvestorCalibrate from "./pages/InvestorCalibrate";
-import InvestorDashboard from "./pages/InvestorDashboard";
-import InvestorSignup from "./pages/InvestorSignup";
-import InvestorPreferences from "./pages/InvestorPreferences";
-import InvestorSeedTest from "./pages/InvestorSeedTest";
-import StartupSignup from "./pages/StartupSignup";
-import StartupRegister from "./pages/StartupRegister";
-import StartupDashboard from "./pages/StartupDashboard";
-import Startups from "./pages/Startups";
-import StartupDetail from "./pages/StartupDetail";
+import Auth from "./pages/Auth";
+import RequireAuth from "./components/RequireAuth";
+import InvestorRoutes from "./components/InvestorRoutes";
+import FounderRoutes from "./components/FounderRoutes";
 import Pricing from "./pages/Pricing";
 import Success from "./pages/Success";
 import NotFound from "./pages/NotFound";
@@ -23,33 +19,50 @@ import ScoreTester from "./ScoreTester";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/investor-onboard" element={<InvestorOnboard />} />
-          <Route path="/investor-calibrate" element={<InvestorCalibrate />} />
-          <Route path="/investor-dashboard" element={<InvestorDashboard />} />
-          <Route path="/investor-signup" element={<InvestorSignup />} />
-          <Route path="/investor/preferences" element={<InvestorPreferences />} />
-          <Route path="/investor/seed-test" element={<InvestorSeedTest />} />
-          <Route path="/startup/signup" element={<StartupSignup />} />
-          <Route path="/startup/register" element={<StartupRegister />} />
-          <Route path="/startup/dashboard" element={<StartupDashboard />} />
-          <Route path="/startups" element={<Startups />} />
-          <Route path="/startups/:id" element={<StartupDetail />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/success" element={<Success />} />
-          <Route path="/score-tester" element={<ScoreTester />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <SessionContextProvider supabaseClient={supabase}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/investor/*" element={
+              <RequireAuth>
+                <InvestorRoutes />
+              </RequireAuth>
+            } />
+            <Route path="/founder/*" element={
+              <RequireAuth>
+                <FounderRoutes />
+              </RequireAuth>
+            } />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/score-tester" element={<ScoreTester />} />
+            {/* Legacy redirects for backward compatibility */}
+            <Route path="/investor-onboard" element={<Auth />} />
+            <Route path="/investor-signup" element={<Auth />} />
+            <Route path="/startup/signup" element={<Auth />} />
+            <Route path="/startup/login" element={<Auth />} />
+            <Route path="/investor-dashboard" element={
+              <RequireAuth>
+                <InvestorRoutes />
+              </RequireAuth>
+            } />
+            <Route path="/startup/dashboard" element={
+              <RequireAuth>
+                <FounderRoutes />
+              </RequireAuth>
+            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </SessionContextProvider>
 );
 
 export default App;

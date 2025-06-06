@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +21,7 @@ const Index = () => {
               <Link to="/investor-signup">
                 <Button variant="outline">Join as Investor</Button>
               </Link>
-              <Link to="/investor-onboard">
+              <Link to="/auth">
                 <Button>Sign In</Button>
               </Link>
             </nav>
@@ -113,7 +112,7 @@ const Index = () => {
             Join hundreds of investors and startups who trust our platform to find their next great opportunity.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/investor-signup">
+            <Link to="/auth">
               <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                 Get Started as Investor
               </Button>
