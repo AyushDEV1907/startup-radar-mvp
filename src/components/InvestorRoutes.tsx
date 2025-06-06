@@ -12,6 +12,7 @@ import NotFound from '@/pages/NotFound';
 export default function InvestorRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<InvestorDashboard />} />
       <Route path="/dashboard" element={<InvestorDashboard />} />
       <Route path="/preferences" element={<InvestorPreferences />} />
       <Route path="/calibrate" element={<InvestorCalibrate />} />

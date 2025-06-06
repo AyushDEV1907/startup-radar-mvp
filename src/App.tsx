@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from '@/integrations/supabase/client';
 import Index from "./pages/Index";
@@ -41,6 +41,13 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/success" element={<Success />} />
             <Route path="/score-tester" element={<ScoreTester />} />
+            
+            {/* Redirect legacy routes */}
+            <Route path="/dashboard" element={<Navigate to="/investor/dashboard" replace />} />
+            <Route path="/calibrate" element={<Navigate to="/investor/calibrate" replace />} />
+            <Route path="/seed-test" element={<Navigate to="/investor/seed-test" replace />} />
+            <Route path="/startups" element={<Navigate to="/investor/startups" replace />} />
+            
             {/* Legacy redirects for backward compatibility */}
             <Route path="/investor-onboard" element={<Auth />} />
             <Route path="/investor-signup" element={<Auth />} />
@@ -56,6 +63,7 @@ const App = () => (
                 <FounderRoutes />
               </RequireAuth>
             } />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

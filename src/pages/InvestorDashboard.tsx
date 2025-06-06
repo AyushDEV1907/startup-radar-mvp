@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap, Play } from 'lucide-react';
@@ -84,7 +83,7 @@ const InvestorDashboard = () => {
               </span>
             </Link>
             <nav className="flex items-center space-x-6">
-              <Link to="/startups" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link to="/investor/startups" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Browse Startups
               </Link>
               <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
@@ -245,7 +244,7 @@ const InvestorDashboard = () => {
                     </div>
                   </div>
                   <div className="pt-2">
-                    <Link to="/investor-onboard">
+                    <Link to="/investor/preferences">
                       <Button variant="outline" size="sm">
                         Update Preferences
                       </Button>
@@ -294,13 +293,13 @@ const InvestorDashboard = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Link to="/startups" className="block">
+                <Link to="/investor/startups" className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <Target className="mr-2 w-4 h-4" />
                     Browse Startups
                   </Button>
                 </Link>
-                <Link to="/investor-calibrate" className="block">
+                <Link to="/investor/calibrate" className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <BarChart3 className="mr-2 w-4 h-4" />
                     Recalibrate Preferences
