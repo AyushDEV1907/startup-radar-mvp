@@ -1,17 +1,20 @@
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap, Play } from 'lucide-react';
+import { TrendingUp, BarChart3, Target, Calendar, Filter, Crown, Zap, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CombinedRecommendations } from '@/components/CombinedRecommendations';
 import RequirePlan from '@/components/RequirePlan';
 import { useUserPlan } from '@/hooks/useUserPlan';
 import LinUCBRecommendations from '@/components/LinUCBRecommendations';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const InvestorDashboard = () => {
   const { plan, isPro, isPremium } = useUserPlan();
+  const { user, signOut } = useAuth();
 
   // Seed demo startups when dashboard loads
   useEffect(() => {
@@ -58,13 +61,13 @@ const InvestorDashboard = () => {
     return "border-gray-200 bg-gray-50";
   };
 
-  const handleTryDemo = async () => {
+  const handleSignOut = async () => {
     try {
-      await supabase.functions.invoke('seed-demo-startups');
-      toast.success('Demo startups loaded! Check the marketplace and recommendations.');
+      await signOut();
+      toast.success('Signed out successfully');
     } catch (error) {
-      console.error('Error loading demo:', error);
-      toast.error('Failed to load demo data');
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
     }
   };
 
@@ -89,11 +92,10 @@ const InvestorDashboard = () => {
               <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Pricing
               </Link>
-              <Button onClick={handleTryDemo} variant="outline" size="sm" className="flex items-center gap-2">
-                <Play className="w-4 h-4" />
-                Try Demo
+              <Button onClick={handleSignOut} variant="outline" size="sm" className="flex items-center gap-2">
+                <LogOut className="w-4 h-4" />
+                Sign Out
               </Button>
-              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
             </nav>
           </div>
         </div>
@@ -104,7 +106,7 @@ const InvestorDashboard = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back, Alex</h1>
+              <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.email?.split('@')[0] || 'Investor'}</h1>
               <p className="text-gray-600">
                 Discover personalized startup recommendations powered by AI contextual bandits.
               </p>
@@ -118,7 +120,7 @@ const InvestorDashboard = () => {
                 {plan === 'free' && (
                   <Link to="/pricing">
                     <Button size="sm" className="mt-2 w-full">
-                      Upgrade for More →
+                      Upgrade →
                     </Button>
                   </Link>
                 )}
@@ -210,9 +212,16 @@ const InvestorDashboard = () => {
             {/* Investment Preferences */}
             <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Filter className="mr-2 w-5 h-5" />
-                  Your Investment Preferences
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Filter className="mr-2 w-5 h-5" />
+                    Your Investment Preferences
+                  </div>
+                  <Link to="/investor/preferences">
+                    <Button variant="outline" size="sm">
+                      Update
+                    </Button>
+                  </Link>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -242,13 +251,6 @@ const InvestorDashboard = () => {
                         </span>
                       ))}
                     </div>
-                  </div>
-                  <div className="pt-2">
-                    <Link to="/investor/preferences">
-                      <Button variant="outline" size="sm">
-                        Update Preferences
-                      </Button>
-                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -302,17 +304,9 @@ const InvestorDashboard = () => {
                 <Link to="/investor/calibrate" className="block">
                   <Button variant="outline" className="w-full justify-start">
                     <BarChart3 className="mr-2 w-4 h-4" />
-                    Recalibrate Preferences
+                    Calibrate Preferences
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={handleTryDemo}
-                >
-                  <Play className="mr-2 w-4 h-4" />
-                  Load Demo Data
-                </Button>
               </CardContent>
             </Card>
           </div>
